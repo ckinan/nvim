@@ -4,6 +4,8 @@ vim.o.number = true
 vim.g.mapleader = " "
 vim.cmd.colorscheme("catppuccin")
 vim.opt.termguicolors = true
+vim.opt.cursorline = true
+vim.opt.colorcolumn = "80"
 
 -- INIT: lazy.nvim
 -- Bootstrap lazy.nvim
