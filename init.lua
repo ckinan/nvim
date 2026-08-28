@@ -62,6 +62,8 @@ require("lazy").setup({
 		opts = {
 			ensure_installed = {
 				"c",
+				"gdscript",
+				"godot_resource",
 				"lua",
 				"vim",
 				"vimdoc",
@@ -108,6 +110,7 @@ require("lazy").setup({
 			formatters_by_ft = {
 				c = { "clang_format" },
 				lua = { "stylua" },
+				gdscript = { "gdscript-formatter" },
 			},
 		},
 	},
@@ -133,8 +136,16 @@ vim.lsp.config("lua_ls", {
 	},
 })
 
+vim.lsp.config("gdscript", {
+	capabilities = capabilities,
+	cmd = vim.lsp.rpc.connect("127.0.0.1", 6005),
+	filetypes = { "gdscript" },
+	root_markers = { "project.godot" },
+})
+
 vim.lsp.enable("clangd")
 vim.lsp.enable("lua_ls")
+vim.lsp.enable("gdscript")
 
 -- LSP navigation
 vim.keymap.set("n", "gd", vim.lsp.buf.definition)
@@ -145,8 +156,17 @@ vim.keymap.set("n", "K", vim.lsp.buf.hover)
 -- END: Setup lsp
 
 -- Enable syntax highlight
+vim.filetype.add({
+	filename = {
+		["project.godot"] = "godot_resource",
+	},
+	extension = {
+		tscn = "godot_resource",
+		tres = "godot_resource",
+	},
+})
 vim.api.nvim_create_autocmd("FileType", {
-	pattern = { "c", "lua", "vim", "vimdoc" },
+	pattern = { "c", "gdscript", "godot_resource", "lua", "vim", "vimdoc" },
 	callback = function()
 		vim.treesitter.start()
 	end,
@@ -155,8 +175,8 @@ vim.api.nvim_create_autocmd("FileType", {
 -- Diagnostics
 vim.keymap.set("n", "<leader>d", vim.diagnostic.open_float)
 vim.keymap.set("n", "<leader>q", function()
-    vim.diagnostic.setqflist()
-    vim.cmd.copen()
+	vim.diagnostic.setqflist()
+	vim.cmd.copen()
 end)
 
 -- Formatting
@@ -174,4 +194,3 @@ vim.opt.grepprg = "rg --vimgrep"
 -- file explorer
 vim.g.netrw_liststyle = 1
 vim.g.netrw_sizestyle = "H"
-
