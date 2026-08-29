@@ -2,7 +2,7 @@
 vim.opt.clipboard = "unnamedplus"
 vim.o.number = true
 vim.g.mapleader = " "
-vim.cmd.colorscheme("catppuccin")
+-- vim.cmd.colorscheme("catppuccin")
 vim.opt.termguicolors = true
 vim.opt.cursorline = true
 vim.opt.colorcolumn = "80"
@@ -114,6 +114,15 @@ require("lazy").setup({
 			},
 		},
 	},
+	{
+		"catppuccin/nvim",
+		name = "catppuccin",
+		priority = 1000,
+		opts = {
+			flavour = "mocha",
+			auto_integrations = true,
+		},
+	},
 })
 -- END: Setup plugins
 
@@ -194,3 +203,6 @@ vim.opt.grepprg = "rg --vimgrep"
 -- file explorer
 vim.g.netrw_liststyle = 1
 vim.g.netrw_sizestyle = "H"
+
+-- theme
+vim.cmd.colorscheme("catppuccin-nvim")
