@@ -205,4 +205,6 @@ vim.g.netrw_liststyle = 1
 vim.g.netrw_sizestyle = "H"
 
 -- theme
+vim.o.winborder = "single"
+-- vim.o.pumborder = "rounded"
 vim.cmd.colorscheme("catppuccin-nvim")
