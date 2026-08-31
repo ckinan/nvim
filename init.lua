@@ -52,6 +52,7 @@ require("lazy").setup({
 			ensure_installed = {
 				"clangd",
 				"lua_ls",
+				"gopls",
 			},
 		},
 	},
@@ -67,6 +68,7 @@ require("lazy").setup({
 				"lua",
 				"vim",
 				"vimdoc",
+				"go",
 			},
 		},
 	},
@@ -111,6 +113,7 @@ require("lazy").setup({
 				c = { "clang_format" },
 				lua = { "stylua" },
 				gdscript = { "gdscript-formatter" },
+				go = { "gofmt" },
 			},
 		},
 	},
@@ -152,9 +155,14 @@ vim.lsp.config("gdscript", {
 	root_markers = { "project.godot" },
 })
 
+vim.lsp.config("gopls", {
+	capabilities = capabilities,
+})
+
 vim.lsp.enable("clangd")
 vim.lsp.enable("lua_ls")
 vim.lsp.enable("gdscript")
+vim.lsp.enable("gopls")
 
 -- LSP navigation
 vim.keymap.set("n", "gd", vim.lsp.buf.definition)
@@ -175,7 +183,7 @@ vim.filetype.add({
 	},
 })
 vim.api.nvim_create_autocmd("FileType", {
-	pattern = { "c", "gdscript", "godot_resource", "lua", "vim", "vimdoc" },
+	pattern = { "c", "gdscript", "godot_resource", "lua", "vim", "vimdoc", "go" },
 	callback = function()
 		vim.treesitter.start()
 	end,
@@ -205,6 +213,7 @@ vim.g.netrw_liststyle = 1
 vim.g.netrw_sizestyle = "H"
 
 -- theme
+-- this option draws the border in the floating windows like lsp hover or blink cmp completion suggestions
 vim.o.winborder = "single"
 -- vim.o.pumborder = "rounded"
 vim.cmd.colorscheme("catppuccin-nvim")
