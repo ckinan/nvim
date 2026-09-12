@@ -254,36 +254,36 @@ vim.o.winborder = "single"
 vim.cmd.colorscheme("catppuccin-nvim")
 
 -- Instead of showing the default nvim intro, we will show a custom one
-vim.api.nvim_create_autocmd("VimEnter", {
-	callback = function()
-		if vim.fn.argc() ~= 0 or vim.api.nvim_buf_get_name(0) ~= "" then
-			return
-		end
-		-- needs env var in .zshrc (or .bashrc) to load the golang binary
-		-- ref: https://github.com/ckinan/lab/tree/main/apps/ckintro.nvim
-		local go_cmd = os.getenv("CKINTRO_NVIM") or ""
-		local handle = io.popen(go_cmd)
-		if not handle then
-			return
-		end
-
-		-- Read everything and split into lines
-		local output = handle:read("*a")
-		handle:close()
-		local lines = {}
-		for line in string.gmatch(output, "[^\r\n]+") do
-			table.insert(lines, line)
-		end
-
-		-- Set up buffer
-		local bufnr = vim.api.nvim_get_current_buf()
-		vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
-		vim.bo[bufnr].buftype, vim.bo[bufnr].bufhidden, vim.bo[bufnr].modifiable = "nofile", "wipe", false
-
-		-- Tiny Keymap: Just grabs the line and runs ":edit <line>"
-		vim.keymap.set("n", "<CR>", function()
-			local path = vim.fn.trim(vim.api.nvim_get_current_line())
-			vim.cmd("edit " .. vim.fn.fnameescape(vim.fn.expand(path)))
-		end, { buffer = bufnr, silent = true })
-	end,
-})
+-- vim.api.nvim_create_autocmd("VimEnter", {
+-- 	callback = function()
+-- 		if vim.fn.argc() ~= 0 or vim.api.nvim_buf_get_name(0) ~= "" then
+-- 			return
+-- 		end
+-- 		-- needs env var in .zshrc (or .bashrc) to load the golang binary
+-- 		-- ref: https://github.com/ckinan/lab/tree/main/apps/ckintro.nvim
+-- 		local go_cmd = os.getenv("CKINTRO_NVIM") or ""
+-- 		local handle = io.popen(go_cmd)
+-- 		if not handle then
+-- 			return
+-- 		end
+--
+-- 		-- Read everything and split into lines
+-- 		local output = handle:read("*a")
+-- 		handle:close()
+-- 		local lines = {}
+-- 		for line in string.gmatch(output, "[^\r\n]+") do
+-- 			table.insert(lines, line)
+-- 		end
+--
+-- 		-- Set up buffer
+-- 		local bufnr = vim.api.nvim_get_current_buf()
+-- 		vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
+-- 		vim.bo[bufnr].buftype, vim.bo[bufnr].bufhidden, vim.bo[bufnr].modifiable = "nofile", "wipe", false
+--
+-- 		-- Tiny Keymap: Just grabs the line and runs ":edit <line>"
+-- 		vim.keymap.set("n", "<CR>", function()
+-- 			local path = vim.fn.trim(vim.api.nvim_get_current_line())
+-- 			vim.cmd("edit " .. vim.fn.fnameescape(vim.fn.expand(path)))
+-- 		end, { buffer = bufnr, silent = true })
+-- 	end,
+-- })
