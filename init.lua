@@ -7,6 +7,20 @@ vim.opt.termguicolors = true
 vim.opt.cursorline = true
 vim.opt.colorcolumn = "80"
 
+vim.opt.list = true
+vim.opt.listchars = {
+	eol = "↵",
+	tab = "→ ",
+	space = "·",
+	multispace = "···+",
+	lead = "·",
+	trail = "•",
+	extends = ">",
+	precedes = "<",
+	conceal = "░",
+	nbsp = "␣",
+}
+
 -- INIT: lazy.nvim
 -- Bootstrap lazy.nvim
 -- The following section is a copy-paste from official lazy.nvim docs
