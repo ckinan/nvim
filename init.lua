@@ -5,9 +5,9 @@ vim.g.mapleader = " "
 -- vim.cmd.colorscheme("catppuccin")
 vim.opt.termguicolors = true
 vim.opt.cursorline = true
-vim.opt.colorcolumn = "80"
+vim.opt.colorcolumn = ""
 
-vim.opt.list = true
+vim.opt.list = false
 vim.opt.listchars = {
 	eol = "↵",
 	tab = "→ ",
@@ -20,6 +20,15 @@ vim.opt.listchars = {
 	conceal = "░",
 	nbsp = "␣",
 }
+
+vim.api.nvim_create_user_command("ToggleVisualHelpers", function()
+	vim.wo.list = not vim.wo.list
+	vim.wo.colorcolumn = vim.wo.colorcolumn == "80" and "" or "80"
+end, { desc = "Toggle visual helpers" })
+
+vim.keymap.set("n", "<leader>v", "<cmd>ToggleVisualHelpers<CR>", {
+	desc = "Toggle visual helpers",
+})
 
 -- INIT: lazy.nvim
 -- Bootstrap lazy.nvim
@@ -146,6 +155,9 @@ require("lazy").setup({
 			flavour = "mocha",
 			auto_integrations = true,
 		},
+	},
+	{
+		"lewis6991/gitsigns.nvim",
 	},
 })
 -- END: Setup plugins
