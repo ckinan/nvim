@@ -159,6 +159,19 @@ require("lazy").setup({
 	{
 		"lewis6991/gitsigns.nvim",
 	},
+	{
+		"karb94/neoscroll.nvim",
+		opts = {
+			mappings = {
+				-- I only want page-up and page-down to get this smooth scrolling behavior
+				-- others like <C-y> or <C-e>, want them to behave as neovim originally does
+				"<C-u>",
+				"<C-d>",
+			},
+			easing = "quadratic",
+			duration_multiplier = 0.3,
+		},
+	},
 })
 -- END: Setup plugins
 
