@@ -153,7 +153,8 @@ require("lazy").setup({
 		priority = 1000,
 		opts = {
 			flavour = "mocha",
-			auto_integrations = true,
+			-- for some reason, integration with blink.cmp feels "broken"
+			-- TODO investigate why
 		},
 	},
 	{
@@ -162,14 +163,14 @@ require("lazy").setup({
 	{
 		"karb94/neoscroll.nvim",
 		opts = {
+			easing = "quadratic",
+			duration_multiplier = 0.3,
 			mappings = {
-				-- I only want page-up and page-down to get this smooth scrolling behavior
-				-- others like <C-y> or <C-e>, want them to behave as neovim originally does
+				-- only want to override behavior for ctrl_u and ctrl_d
+				-- that's just my preference, not due to issues/bugs/whatsoever
 				"<C-u>",
 				"<C-d>",
 			},
-			easing = "quadratic",
-			duration_multiplier = 0.3,
 		},
 	},
 })
@@ -277,6 +278,31 @@ vim.g.netrw_sizestyle = "H"
 vim.o.winborder = "single"
 -- vim.o.pumborder = "rounded"
 vim.cmd.colorscheme("catppuccin-nvim")
+
+-- INIT: neoscroll customizations
+-- add the ability to specify how many lines you want to scroll and persist it
+-- e.g. `20+ctrl_u` would move up by 20 lines
+-- `duration = 250` taken from https://github.com/karb94/neoscroll.nvim/blob/master/lua/neoscroll/init.lua
+local neoscroll = require("neoscroll")
+neoscroll.setup({ mappings = {} }) -- disable default <C-u>/<C-d> mappings
+local modes = { "n", "v", "x" }
+-- this number is arbitrary, currently it just feels the right number of lines to scroll by default
+vim.wo.scroll = 30
+
+vim.keymap.set(modes, "<C-u>", function()
+	if vim.v.count > 0 then
+		vim.wo.scroll = vim.v.count
+	end
+	neoscroll.ctrl_u({ duration = 250 })
+end)
+
+vim.keymap.set(modes, "<C-d>", function()
+	if vim.v.count > 0 then
+		vim.wo.scroll = vim.v.count
+	end
+	neoscroll.ctrl_d({ duration = 250 })
+end)
+-- END: neoscroll customizations
 
 -- Instead of showing the default nvim intro, we will show a custom one
 -- vim.api.nvim_create_autocmd("VimEnter", {
