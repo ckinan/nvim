@@ -96,6 +96,8 @@ require("lazy").setup({
 				"vimdoc",
 				"go",
 				"python",
+				"markdown",
+				"markdown_inline",
 			},
 		},
 	},
@@ -128,6 +130,13 @@ require("lazy").setup({
 			},
 			sources = {
 				default = { "lsp", "path", "snippets", "buffer" },
+				providers = {
+					path = {
+						opts = {
+							show_hidden_files_by_default = true,
+						},
+					},
+				},
 			},
 			fuzzy = { implementation = "prefer_rust_with_warning" },
 		},
@@ -173,6 +182,36 @@ require("lazy").setup({
 				"<C-d>",
 			},
 		},
+	},
+	{
+		"nvim-telescope/telescope.nvim",
+		version = "*",
+		dependencies = {
+			"nvim-lua/plenary.nvim",
+			-- optional but recommended
+			{ "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
+		},
+		opts = function()
+			return {
+				defaults = {
+					preview = {
+						line_number = true,
+						wrap = true,
+					},
+				},
+				pickers = {
+					find_files = {
+						hidden = true,
+						find_command = { "rg", "--files", "--hidden", "--glob", "!**/.git/*" },
+					},
+					live_grep = {
+						additional_args = function()
+							return { "--hidden", "--glob", "!**/.git/*" }
+						end,
+					},
+				},
+			}
+		end,
 	},
 })
 -- END: Setup plugins
@@ -305,3 +344,26 @@ vim.keymap.set(modes, "<C-d>", function()
 end)
 -- END: neoscroll customizations
 
+-- INIT: Telescope customizations
+-- from: https://github.com/nvim-telescope/telescope.nvim#usage
+local builtin = require("telescope.builtin")
+vim.keymap.set("n", "<leader>ff", builtin.find_files, { desc = "Telescope find files" })
+vim.keymap.set("n", "<leader>fg", builtin.live_grep, { desc = "Telescope live grep" })
+vim.keymap.set("n", "<leader>fb", builtin.buffers, { desc = "Telescope buffers" })
+vim.keymap.set("n", "<leader>fh", builtin.help_tags, { desc = "Telescope help tags" })
+
+-- preview: show line numbers and wrap lines
+vim.api.nvim_create_autocmd("User", {
+	pattern = "TelescopePreviewerLoaded",
+	callback = function()
+		vim.wo.wrap = true
+		vim.wo.number = true
+	end,
+})
+-- END: Telescope customizations
+
+-- INIT: folding (collapse/expand)
+vim.opt.foldmethod = "expr"
+vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+vim.opt.foldlevelstart = 99
+-- END: folding
