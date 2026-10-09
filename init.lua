@@ -367,3 +367,10 @@ vim.opt.foldmethod = "expr"
 vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
 vim.opt.foldlevelstart = 99
 -- END: folding
+
+-- INIT: keymap to insert timestamp
+vim.keymap.set("i", "<C-g>i", function()
+	return os.date("%Y%m%d%H%M%S")
+end, { expr = true, desc = "Insert timestamp" })
+-- END: keymap to insert timestamp
+
