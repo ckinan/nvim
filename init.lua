@@ -184,34 +184,18 @@ require("lazy").setup({
 		},
 	},
 	{
-		"nvim-telescope/telescope.nvim",
-		version = "*",
-		dependencies = {
-			"nvim-lua/plenary.nvim",
-			-- optional but recommended
-			{ "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
+		"ibhagwan/fzf-lua",
+		dependencies = { "nvim-tree/nvim-web-devicons" },
+		---@module "fzf-lua"
+		---@type fzf-lua.Config|{}
+		---@diagnostic disable: missing-fields
+		opts = {
+			grep = {
+				-- If fzf-lua auto-detects 'rg' on your system, it uses this:
+				rg_opts = "--column --line-number --no-heading --color=always --smart-case --hidden -e",
+			},
 		},
-		opts = function()
-			return {
-				defaults = {
-					preview = {
-						line_number = true,
-						wrap = true,
-					},
-				},
-				pickers = {
-					find_files = {
-						hidden = true,
-						find_command = { "rg", "--files", "--hidden", "--glob", "!**/.git/*" },
-					},
-					live_grep = {
-						additional_args = function()
-							return { "--hidden", "--glob", "!**/.git/*" }
-						end,
-					},
-				},
-			}
-		end,
+		---@diagnostic enable: missing-fields
 	},
 })
 -- END: Setup plugins
@@ -344,23 +328,58 @@ vim.keymap.set(modes, "<C-d>", function()
 end)
 -- END: neoscroll customizations
 
--- INIT: Telescope customizations
--- from: https://github.com/nvim-telescope/telescope.nvim#usage
-local builtin = require("telescope.builtin")
-vim.keymap.set("n", "<leader>ff", builtin.find_files, { desc = "Telescope find files" })
-vim.keymap.set("n", "<leader>fg", builtin.live_grep, { desc = "Telescope live grep" })
-vim.keymap.set("n", "<leader>fb", builtin.buffers, { desc = "Telescope buffers" })
-vim.keymap.set("n", "<leader>fh", builtin.help_tags, { desc = "Telescope help tags" })
+-- INIT: fzf-lua customizations
+local fzf = require("fzf-lua")
+vim.keymap.set("n", "<leader>ff", fzf.files, { desc = "Fzf files" })
+vim.keymap.set("n", "<leader>fg", fzf.live_grep, { desc = "Fzf content" })
+vim.keymap.set("n", "<leader>fb", fzf.buffers, { desc = "Fzf buffers" })
+vim.keymap.set("n", "<leader>fh", fzf.help_tags, { desc = "Fzf help tags" })
 
--- preview: show line numbers and wrap lines
-vim.api.nvim_create_autocmd("User", {
-	pattern = "TelescopePreviewerLoaded",
-	callback = function()
-		vim.wo.wrap = true
-		vim.wo.number = true
-	end,
-})
--- END: Telescope customizations
+-- Structured favorites with shortcuts and aliases
+vim.keymap.set("n", "<leader>F", function()
+	local absolute_path = vim.fn.expand("~/.config/nvim-favorite-files/config.lua")
+
+	local chunk, err = loadfile(absolute_path)
+	if not chunk then
+		vim.notify("Could not read favorites file: " .. tostring(err), vim.log.levels.WARN)
+		return
+	end
+
+	local raw_favorites = chunk()
+	if type(raw_favorites) ~= "table" then
+		vim.notify("Favorites file must return a valid Lua table matrix", vim.log.levels.WARN)
+		return
+	end
+
+	local display_entries = {}
+	local fzf_bind_flags = {}
+
+	for index, item in ipairs(raw_favorites) do
+		local dynamic_id = tostring(index)
+		table.insert(display_entries, string.format("[%s] %s  (%s)", dynamic_id, item.alias, item.path))
+		table.insert(fzf_bind_flags, string.format("%s:to-entry:[%s]", dynamic_id, dynamic_id))
+	end
+
+	fzf.fzf_exec(display_entries, {
+		prompt = "Favorites > ",
+		fzf_opts = {
+			["--bind"] = table.concat(fzf_bind_flags, ","),
+		},
+		actions = {
+			["default"] = function(selected)
+				if not selected or #selected == 0 then
+					return
+				end
+				local selection_string = selected[1]
+				local actual_path = selection_string:match("%((.-)%)")
+				if actual_path then
+					vim.cmd("edit " .. vim.fn.expand(actual_path))
+				end
+			end,
+		},
+	})
+end, { desc = "Fzf modular favorite files" })
+-- END: fzf-lua customizations
 
 -- INIT: folding (collapse/expand)
 vim.opt.foldmethod = "expr"
@@ -373,4 +392,3 @@ vim.keymap.set("i", "<C-g>i", function()
 	return os.date("%Y%m%d%H%M%S")
 end, { expr = true, desc = "Insert timestamp" })
 -- END: keymap to insert timestamp
-
