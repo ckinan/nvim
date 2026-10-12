@@ -335,50 +335,36 @@ vim.keymap.set("n", "<leader>fg", fzf.live_grep, { desc = "Fzf content" })
 vim.keymap.set("n", "<leader>fb", fzf.buffers, { desc = "Fzf buffers" })
 vim.keymap.set("n", "<leader>fh", fzf.help_tags, { desc = "Fzf help tags" })
 
--- Structured favorites with shortcuts and aliases
-vim.keymap.set("n", "<leader>F", function()
-	local absolute_path = vim.fn.expand("~/.config/nvim-favorite-files/config.lua")
-
-	local chunk, err = loadfile(absolute_path)
+-- fzf bookmarks/favorites (dirs and files)
+vim.keymap.set("n", "<leader>fv", function()
+	local absolute_path = vim.fn.expand("~/.config/fzf-bookmarks/config.lua")
+	local chunk, _ = loadfile(absolute_path)
 	if not chunk then
-		vim.notify("Could not read favorites file: " .. tostring(err), vim.log.levels.WARN)
 		return
 	end
 
-	local raw_favorites = chunk()
-	if type(raw_favorites) ~= "table" then
-		vim.notify("Favorites file must return a valid Lua table matrix", vim.log.levels.WARN)
-		return
-	end
-
+	local bookmarks_mod = chunk()
 	local display_entries = {}
-	local fzf_bind_flags = {}
 
-	for index, item in ipairs(raw_favorites) do
-		local dynamic_id = tostring(index)
-		table.insert(display_entries, string.format("[%s] %s  (%s)", dynamic_id, item.alias, item.path))
-		table.insert(fzf_bind_flags, string.format("%s:to-entry:[%s]", dynamic_id, dynamic_id))
+	for index, item in ipairs(bookmarks_mod.raw_bookmarks) do
+		table.insert(display_entries, string.format("[%d] %s  (%s)", index, item.alias, item.path))
 	end
 
 	fzf.fzf_exec(display_entries, {
-		prompt = "Favorites > ",
-		fzf_opts = {
-			["--bind"] = table.concat(fzf_bind_flags, ","),
-		},
+		prompt = "Bookmarks > ",
 		actions = {
 			["default"] = function(selected)
 				if not selected or #selected == 0 then
 					return
 				end
-				local selection_string = selected[1]
-				local actual_path = selection_string:match("%((.-)%)")
+				local actual_path = bookmarks_mod.parse_selection(selected[1])
 				if actual_path then
-					vim.cmd("edit " .. vim.fn.expand(actual_path))
+					vim.cmd("edit " .. actual_path)
 				end
 			end,
 		},
 	})
-end, { desc = "Fzf modular favorite files" })
+end, { desc = "Fzf modular bookmarks" })
 -- END: fzf-lua customizations
 
 -- INIT: folding (collapse/expand)
