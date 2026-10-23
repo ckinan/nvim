@@ -3,6 +3,10 @@ vim.opt.clipboard = "unnamedplus"
 vim.o.number = true
 vim.o.relativenumber = true
 vim.g.mapleader = " "
+-- the following two needs to be together `ignorecase` and `smartcase`
+-- so that only search uppercase if the string has at least a capital letter
+vim.opt.ignorecase = true
+vim.opt.smartcase = true
 -- vim.cmd.colorscheme("catppuccin")
 vim.opt.termguicolors = true
 vim.opt.cursorline = true
@@ -163,8 +167,21 @@ require("lazy").setup({
 		priority = 1000,
 		opts = {
 			flavour = "mocha",
+			-- INIT: settings to fix weird theme conflicts with yazi.nvim
+			transparent_background = true,
+			float = {
+				transparent = true,
+				solid = false,
+			},
+			-- END: settings to fix weird theme conflicts with yazi.nvim
 			-- for some reason, integration with blink.cmp feels "broken"
 			-- TODO investigate why
+			custom_highlights = function(colors)
+				return {
+					NeoTreeFileStats = { fg = colors.overlay1 },
+					NeoTreeFileStatsHeader = { fg = colors.overlay1 },
+				}
+			end,
 		},
 	},
 	{
@@ -194,8 +211,85 @@ require("lazy").setup({
 				-- If fzf-lua auto-detects 'rg' on your system, it uses this:
 				rg_opts = "--column --line-number --no-heading --color=always --smart-case --hidden -e",
 			},
+			winopts = {
+				border = "single",
+				preview = {
+					border = "single",
+					wrap = "wrap",
+				},
+			},
 		},
 		---@diagnostic enable: missing-fields
+	},
+	{
+		-- most of this setup from official repo readme
+		"mikavilpas/yazi.nvim",
+		version = "*", -- use the latest stable version
+		event = "VeryLazy",
+		dependencies = {
+			{ "nvim-lua/plenary.nvim", lazy = true },
+		},
+		keys = {
+			{
+				"<leader>-",
+				mode = { "n", "v" },
+				"<cmd>Yazi<cr>",
+				desc = "Open yazi at the current file",
+			},
+			{
+				-- Open in the current working directory
+				"<leader>cw",
+				"<cmd>Yazi cwd<cr>",
+				desc = "Open the file manager in nvim's working directory",
+			},
+			{
+				"<c-up>",
+				"<cmd>Yazi toggle<cr>",
+				desc = "Resume the last yazi session",
+			},
+		},
+		---@type YaziConfig | {}
+		opts = {
+			keymaps = {
+				show_help = "<f1>",
+			},
+		},
+	},
+	{
+		"nvim-neo-tree/neo-tree.nvim",
+		branch = "v3.x",
+		dependencies = {
+			"nvim-lua/plenary.nvim",
+			"MunifTanjim/nui.nvim",
+			"nvim-tree/nvim-web-devicons", -- optional, but recommended
+		},
+		opts = {
+			window = {
+				position = "float",
+				popup = {
+					position = { col = "50%", row = "50%" },
+					size = function()
+						return {
+							-- n% of total editor width
+							width = math.floor(vim.o.columns * 0.9),
+							-- n% of total editor height
+							height = math.floor(vim.o.lines * 0.9),
+						}
+					end,
+				},
+			},
+			default_component_configs = {
+				-- container = {
+				-- 	enable_character_fade = false,
+				-- },
+			},
+			filesystem = {
+				filtered_items = {
+					visible = true,
+				},
+			},
+		},
+		lazy = false, -- neo-tree will lazily load itself
 	},
 })
 -- END: Setup plugins
@@ -330,13 +424,15 @@ end)
 
 -- INIT: fzf-lua customizations
 local fzf = require("fzf-lua")
-vim.keymap.set("n", "<leader>ff", fzf.files, { desc = "Fzf files" })
-vim.keymap.set("n", "<leader>fg", fzf.live_grep, { desc = "Fzf content" })
-vim.keymap.set("n", "<leader>fb", fzf.buffers, { desc = "Fzf buffers" })
-vim.keymap.set("n", "<leader>fh", fzf.help_tags, { desc = "Fzf help tags" })
+-- NOTE: updated f* to s* so that it doesnt conflict with the format-keymap
+--       s* as "search"
+vim.keymap.set("n", "<leader>sf", fzf.files, { desc = "Fzf files" })
+vim.keymap.set("n", "<leader>sg", fzf.live_grep, { desc = "Fzf content" })
+vim.keymap.set("n", "<leader>sb", fzf.buffers, { desc = "Fzf buffers" })
+vim.keymap.set("n", "<leader>sh", fzf.help_tags, { desc = "Fzf help tags" })
 
 -- fzf bookmarks/favorites (dirs and files)
-vim.keymap.set("n", "<leader>fv", function()
+vim.keymap.set("n", "<leader>sv", function()
 	local absolute_path = vim.fn.expand("~/.config/fzf-bookmarks/config.lua")
 	local chunk, _ = loadfile(absolute_path)
 	if not chunk then
@@ -378,3 +474,7 @@ vim.keymap.set("i", "<C-g>i", function()
 	return os.date("%Y%m%d%H%M%S")
 end, { expr = true, desc = "Insert timestamp" })
 -- END: keymap to insert timestamp
+
+-- INIT: neotree customizations
+vim.keymap.set("n", "<leader>e", "<Cmd>Neotree toggle<CR>", { desc = "Toggle Neo-tree" })
+-- END: neotree customizations
